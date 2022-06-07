@@ -6,6 +6,10 @@ import pyrr
 import numpy as np
 from cpe3d import Object3D
 
+global xCoord,yCoord
+xCoord=0
+yCoord=0
+
 class ViewerGL:
     def __init__(self):
         # initialisation de la librairie GLFW
@@ -39,7 +43,7 @@ class ViewerGL:
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
             self.update_key()
-
+            self.updateMouse(self.window)
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
                 if isinstance(obj, Object3D):
@@ -50,7 +54,21 @@ class ViewerGL:
             glfw.swap_buffers(self.window)
             # gestion des évènements
             glfw.poll_events()
+    def updateMouse(self,win):
+        global xCoord
+        global yCoord
+        x,y=glfw.get_cursor_pos(win)
+        newX=(x-xCoord)/100
+        newY=(y-yCoord)/100
+
+        xCoord=x
+        yCoord=y
         
+        self.cam.transformation.rotation_euler[pyrr.euler.index().roll] += newY
+        
+        self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += newX
+        return newX,newY
+
     def key_callback(self, win, key, scancode, action, mods):
         # sortie du programme si appui sur la touche 'échappement'
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
@@ -93,6 +111,7 @@ class ViewerGL:
         if (loc == -1) :
             print("Pas de variable uniforme : projection")
         GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, self.cam.projection)
+
 
     def update_key(self):
         if glfw.KEY_UP in self.touch and self.touch[glfw.KEY_UP] > 0:
