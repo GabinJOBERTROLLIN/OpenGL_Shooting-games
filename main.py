@@ -8,23 +8,23 @@ import pyrr
 
 def main():
     
-    stage=open('stage.txt','r')
-    
-    
+    Stage=open('stage.txt','r')
+    stage=Stage.readlines()
+    Stage.close()
     map=[]
     for nbligne in stage:
         map.append([])
     ligneM=0
     for ligne in stage:
+        ligne=ligne[1:-2]
         print(ligne)
-        ligne.replace('[','')
-        ligne.replace(']','')
         ligne=ligne.split()
-        print(ligne)
         for i in ligne:
             map[ligneM].append(int(i))
         ligneM+=1
-    print(map)
+    
+    xcord=-32
+    zcord=-32
 
     viewer = ViewerGL()
 
@@ -38,13 +38,27 @@ def main():
     m = Mesh.load_obj('cube.obj')
     m.normalize()
     m.apply_matrix(pyrr.matrix44.create_from_scale([2, 5, 2, 1]))
-    tr = Transformation3D()
-    tr.translation.y = -np.amin(m.vertices, axis=0)[1]
-    tr.translation.z = 0
-    tr.rotation_center.z = 0.2
-    texture = glutils.load_texture('Wall.jpg')
-    o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
-    viewer.add_object(o)
+    n = Mesh.load_obj('stegosaurus.obj')
+    n.normalize()
+    n.apply_matrix(pyrr.matrix44.create_from_scale([2, 2, 2, 1]))
+    for ligne in map:
+        for bloc in ligne:
+            if bloc==1:
+                tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,0,zcord]))
+                tr.translation.z = 0
+                tr.rotation_center.z = 0.2
+                texture = glutils.load_texture('Wall.jpg')
+                o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texture, tr)
+                viewer.add_object(o)
+            if bloc==2:
+                tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,0,zcord]))
+                tr.translation.z = 0
+                tr.rotation_center.z = 0.2
+                texture = glutils.load_texture('stegosaurus.jpg')
+                o = Object3D(n.load_to_gpu(), n.get_nb_triangles(), program3d_id, texture, tr)
+                viewer.add_object(o)
+            xcord+=2
+        zcord+=2         
 
     m = Mesh()
     p0, p1, p2, p3 = [-32, 0, -32], [32, 0, -32], [32, 0, 32], [-32, 0, 32]
