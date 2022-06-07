@@ -7,13 +7,16 @@ import OpenGL.GL as GL
 import pyrr
 
 def main():
+    
     stage=open('stage.txt','r')
     
+    
     map=[]
-    for nbligne in range(len(stage)):
+    for nbligne in stage:
         map.append([])
     ligneM=0
     for ligne in stage:
+        print(ligne)
         ligne.replace('[','')
         ligne.replace(']','')
         ligne=ligne.split()
@@ -22,7 +25,7 @@ def main():
             map[ligneM].append(int(i))
         ligneM+=1
     print(map)
-    
+
     viewer = ViewerGL()
 
     viewer.set_camera(Camera())
