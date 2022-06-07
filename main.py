@@ -38,10 +38,12 @@ def main():
 
     m = Mesh.load_obj('cube.obj')
     m.normalize()
+    vaoM=m.load_to_gpu()
     m.apply_matrix(pyrr.matrix44.create_from_scale([1, 1.25, 1, 1]))
     
     n = Mesh.load_obj('stegosaurus.obj')
     n.normalize()
+    vaoN=n.load_to_gpu()
     n.apply_matrix(pyrr.matrix44.create_from_scale([1, 1, 1, 1]))
     texturew = glutils.load_texture('Wall.jpg')
     textures = glutils.load_texture('stegosaurus.jpg')
@@ -51,11 +53,11 @@ def main():
             # print('b')
             if bloc==1:
                 tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,1.25,zcord]))
-                o = Object3D(m.load_to_gpu(), m.get_nb_triangles(), program3d_id, texturew, tr)
+                o = Object3D(vaoM, m.get_nb_triangles(), program3d_id, texturew, tr)
                 viewer.add_object(o)
             if bloc==2:
                 tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,0.5,zcord]))
-                o = Object3D(n.load_to_gpu(), n.get_nb_triangles(), program3d_id, textures, tr)
+                o = Object3D(vaoN, n.get_nb_triangles(), program3d_id, textures, tr)
                 viewer.add_object(o)
             print(xcord, zcord)
             xcord+=2
