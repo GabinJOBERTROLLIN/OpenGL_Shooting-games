@@ -6,6 +6,7 @@ import pyrr
 import numpy as np
 from cpe3d import Object3D
 
+
 global xCoord,yCoord
 xCoord=0
 yCoord=0
@@ -38,17 +39,44 @@ class ViewerGL:
 
     def run(self):
         # boucle d'affichage
+        coord=[0,0,0]
         while not glfw.window_should_close(self.window):
+            ok=True
+            print(self.cam.transformation.translation)
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+            coord=self.update_key()
 
-            self.update_key()
             self.updateMouse(self.window)
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
                 if isinstance(obj, Object3D):
                     self.update_camera(obj.program)
                 obj.draw()
+            for obj in self.objs:       
+                testx=coord[0]+self.cam.transformation.translation[0]
+                testz=coord[2]+self.cam.transformation.translation[2]
+                xmin=obj.transformation.translation.x-0.5
+                xmax=obj.transformation.translation.x+0.5
+                zmin=obj.transformation.translation.z-0.5
+                zmax=obj.transformation.translation.z+0.5
+                print(obj.transformation.translation)
+                print(testx)
+                print(testz)
+                if xmin<testx and testx<xmax:
+                    if zmin<testz and testz<zmax:
+                        ok=False
+                        break
+                    else:
+                        ok=True
+                print(coord)
+            if ok:
+                self.cam.transformation.translation += \
+                    pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
+                self.cam.transformation.translation[1]=1
+                self.cam.transformation.rotation_center = self.cam.transformation.translation
+
+
 
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
@@ -115,26 +143,15 @@ class ViewerGL:
 
     def update_key(self):
         if glfw.KEY_W in self.touch and self.touch[glfw.KEY_W] > 0:
-            self.cam.transformation.translation += \
-                pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3([0, 0, -0.1]))
-            self.cam.transformation.translation[1]=1
-            self.cam.transformation.rotation_center = self.cam.transformation.translation
+            return [0, 0, -0.2]
 
         if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
-            self.cam.transformation.translation += \
-                pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3([0, 0, 0.2]))
-            self.cam.transformation.translation[1]=1
-            self.cam.transformation.rotation_center = self.cam.transformation.translation
+            return [0, 0, 0.2]
 
         if glfw.KEY_A in self.touch and self.touch[glfw.KEY_A] > 0:
-            self.cam.transformation.translation -= \
-                pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3([0.2, 0, 0]))
-            self.cam.transformation.translation[1]=1
-            self.cam.transformation.rotation_center = self.cam.transformation.translation
+            return [-0.2, 0, 0]
 
         if glfw.KEY_D in self.touch and self.touch[glfw.KEY_D] > 0:
-            self.cam.transformation.translation += \
-                pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3([0.2, 0, 0]))
-            self.cam.transformation.translation[1]=1
-            self.cam.transformation.rotation_center = self.cam.transformation.translation
-        
+            return [0.2, 0, 0],
+        else:
+            return [0,0,0]

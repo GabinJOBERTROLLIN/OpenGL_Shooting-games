@@ -18,7 +18,6 @@ def main():
     ligneM=0
     for ligne in stage:
         ligne=ligne[1:-2]
-        print(ligne)
         ligne=ligne.split()
         for i in ligne:
             map[ligneM].append(int(i))
@@ -46,10 +45,9 @@ def main():
     n.apply_matrix(pyrr.matrix44.create_from_scale([1, 1, 1, 1]))
     texturew = glutils.load_texture('Wall.jpg')
     textures = glutils.load_texture('stegosaurus.jpg')
+    i = 0
     for ligne in map:
-        # print('a')
         for bloc in ligne:
-            # print('b')
             if bloc==1:
                 tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,1,zcord]))
                 o = Object3D(vaoM, m.get_nb_triangles(), program3d_id, texturew, tr)
@@ -64,10 +62,11 @@ def main():
                 viewer.cam.transformation.translation.z = zcord
                 viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
 
+
             xcord+=2
         xcord = -15
         zcord+=2         
-
+    
     m = Mesh()
     p0, p1, p2, p3 = [-16, 0, -16], [16, 0, -16], [16, 0, 16], [-16, 0, 16]
     n, c = [0, 1, 0], [1, 1, 1]
