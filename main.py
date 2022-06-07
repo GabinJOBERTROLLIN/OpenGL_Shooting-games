@@ -36,7 +36,7 @@ def main():
     program3d_id = glutils.create_program_from_file('shader.vert', 'shader.frag')
     programGUI_id = glutils.create_program_from_file('gui.vert', 'gui.frag')
 
-    m = Mesh.load_obj('cube.obj')
+    m = Mesh.load_obj('stegosaurus.obj')
     m.normalize()
     m.apply_matrix(pyrr.matrix44.create_from_scale([2, 2.5, 2, 1]))
     n = Mesh.load_obj('stegosaurus.obj')
