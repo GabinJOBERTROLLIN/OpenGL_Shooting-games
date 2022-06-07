@@ -49,7 +49,7 @@ def main():
     textures = glutils.load_texture('stegosaurus.jpg')
     for ligne in map:
         # print('a')
-        for bloc in ligne:
+        for bloc in ligne:  
             # print('b')
             if bloc==1:
                 tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,1.25,zcord]))

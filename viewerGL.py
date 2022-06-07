@@ -142,6 +142,7 @@ class ViewerGL:
             self.cam.transformation.translation[1]=2
             self.cam.transformation.rotation_center = self.cam.transformation.translation
         
+        #if glfw.KEY_SPACE in self.touch:
 
       
 
