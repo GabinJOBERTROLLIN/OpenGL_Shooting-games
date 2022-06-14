@@ -29,32 +29,33 @@ class Object3D(Object):
         self.transformation = transformation
 
     def draw(self):
-        GL.glUseProgram(self.program)
+        if self.visible : 
+            GL.glUseProgram(self.program)
 
-        # Récupère l'identifiant de la variable pour le programme courant
-        loc = GL.glGetUniformLocation(self.program, "translation_model")
-        # Vérifie que la variable existe
-        if (loc == -1) :
-            print("Pas de variable uniforme : translation_model")
-        # Modifie la variable pour le programme courant
-        translation = self.transformation.translation
-        GL.glUniform4f(loc, translation.x, translation.y, translation.z, 0)
+            # Récupère l'identifiant de la variable pour le programme courant
+            loc = GL.glGetUniformLocation(self.program, "translation_model")
+            # Vérifie que la variable existe
+            if (loc == -1) :
+                print("Pas de variable uniforme : translation_model")
+            # Modifie la variable pour le programme courant
+            translation = self.transformation.translation
+            GL.glUniform4f(loc, translation.x, translation.y, translation.z, 0)
 
-        # Récupère l'identifiant de la variable pour le programme courant
-        loc = GL.glGetUniformLocation(self.program, "rotation_center_model")
-        # Vérifie que la variable existe
-        if (loc == -1) :
-            print("Pas de variable uniforme : rotation_center_model")
-        # Modifie la variable pour le programme courant
-        rotation_center = self.transformation.rotation_center
-        GL.glUniform4f(loc, rotation_center.x, rotation_center.y, rotation_center.z, 0)
+            # Récupère l'identifiant de la variable pour le programme courant
+            loc = GL.glGetUniformLocation(self.program, "rotation_center_model")
+            # Vérifie que la variable existe
+            if (loc == -1) :
+                print("Pas de variable uniforme : rotation_center_model")
+            # Modifie la variable pour le programme courant
+            rotation_center = self.transformation.rotation_center
+            GL.glUniform4f(loc, rotation_center.x, rotation_center.y, rotation_center.z, 0)
 
-        rot = pyrr.matrix44.create_from_eulers(self.transformation.rotation_euler)
-        loc = GL.glGetUniformLocation(self.program, "rotation_model")
-        if (loc == -1) :
-            print("Pas de variable uniforme : rotation_model")
-        GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, rot)
-        super().draw()
+            rot = pyrr.matrix44.create_from_eulers(self.transformation.rotation_euler)
+            loc = GL.glGetUniformLocation(self.program, "rotation_model")
+            if (loc == -1) :
+                print("Pas de variable uniforme : rotation_model")
+            GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, rot)
+            super().draw()
         
 
 class Camera:
@@ -70,29 +71,30 @@ class Text(Object):
         super().__init__(vao, nb_triangle, program, texture)
 
     def draw(self):
-        GL.glUseProgram(self.program)
-        GL.glDisable(GL.GL_DEPTH_TEST)
-        size = self.topRight-self.bottomLeft
-        size[0] /= len(self.value)
-        loc = GL.glGetUniformLocation(self.program, "size")
-        if (loc == -1) :
-            print("Pas de variable uniforme : size")
-        GL.glUniform2f(loc, size[0], size[1])
-        GL.glBindVertexArray(self.vao)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-        for idx, c in enumerate(self.value):
-            loc = GL.glGetUniformLocation(self.program, "start")
+        if self.visible:
+            GL.glUseProgram(self.program)
+            GL.glDisable(GL.GL_DEPTH_TEST)
+            size = self.topRight-self.bottomLeft
+            size[0] /= len(self.value)
+            loc = GL.glGetUniformLocation(self.program, "size")
             if (loc == -1) :
-                print("Pas de variable uniforme : start")
-            GL.glUniform2f(loc, self.bottomLeft[0]+idx*size[0], self.bottomLeft[1])
+                print("Pas de variable uniforme : size")
+            GL.glUniform2f(loc, size[0], size[1])
+            GL.glBindVertexArray(self.vao)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+            for idx, c in enumerate(self.value):
+                loc = GL.glGetUniformLocation(self.program, "start")
+                if (loc == -1) :
+                    print("Pas de variable uniforme : start")
+                GL.glUniform2f(loc, self.bottomLeft[0]+idx*size[0], self.bottomLeft[1])
 
-            loc = GL.glGetUniformLocation(self.program, "c")
-            if (loc == -1) :
-                print("Pas de variable uniforme : c")
-            GL.glUniform1i(loc, np.array(ord(c), np.int32))
+                loc = GL.glGetUniformLocation(self.program, "c")
+                if (loc == -1) :
+                    print("Pas de variable uniforme : c")
+                GL.glUniform1i(loc, np.array(ord(c), np.int32))
 
-            GL.glDrawElements(GL.GL_TRIANGLES, 3*2, GL.GL_UNSIGNED_INT, None)
-        GL.glEnable(GL.GL_DEPTH_TEST)
+                GL.glDrawElements(GL.GL_TRIANGLES, 3*2, GL.GL_UNSIGNED_INT, None)
+            GL.glEnable(GL.GL_DEPTH_TEST)
 
     @staticmethod
     def initalize_geometry():

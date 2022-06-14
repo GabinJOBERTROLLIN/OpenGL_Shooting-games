@@ -22,9 +22,10 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(800, 800, 'OpenGL', None, None)
+        self.window = glfw.create_window(800, 800, 'Shooter basique', glfw.get_primary_monitor(), None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
+        glfw.set_mouse_button_callback(self.window,self.Mouse_button_callback)
         # activation du context OpenGL pour la fenêtre
         glfw.make_context_current(self.window)
         glfw.swap_interval(1)
@@ -42,7 +43,7 @@ class ViewerGL:
         coord=[0,0,0]
         while not glfw.window_should_close(self.window):
             ok=True
-            print(self.cam.transformation.translation)
+            #print(self.cam.transformation.translation)
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
             coord=self.update_key()
@@ -53,23 +54,23 @@ class ViewerGL:
                 if isinstance(obj, Object3D):
                     self.update_camera(obj.program)
                 obj.draw()
-            for obj in self.objs:       
+            for obj in self.objs[:len(self.objs)-2]:       
                 testx=coord[0]+self.cam.transformation.translation[0]
                 testz=coord[2]+self.cam.transformation.translation[2]
                 xmin=obj.transformation.translation.x-0.5
                 xmax=obj.transformation.translation.x+0.5
                 zmin=obj.transformation.translation.z-0.5
                 zmax=obj.transformation.translation.z+0.5
-                print(obj.transformation.translation)
-                print(testx)
-                print(testz)
+                #print(obj.transformation.translation)
+                #print(testx)
+                #print(testz)
                 if xmin<testx and testx<xmax:
                     if zmin<testz and testz<zmax:
                         ok=False
                         break
                     else:
                         ok=True
-                print(coord)
+                #print(coord)
             if ok:
                 self.cam.transformation.translation += \
                     pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
@@ -96,7 +97,11 @@ class ViewerGL:
         self.cam.transformation.rotation_euler[pyrr.euler.index().roll] += newY
         
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += newX
-
+    def Mouse_button_callback(self,window, button, action,mods):
+        if button ==glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
+            print ("bouton click")
+            self.objs[-1].visible=False
+            self.objs[-2].visible=False
     def key_callback(self, win, key, scancode, action, mods):
         # sortie du programme si appui sur la touche 'échappement'
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
@@ -155,3 +160,4 @@ class ViewerGL:
             return [0.2, 0, 0],
         else:
             return [0,0,0]
+    
