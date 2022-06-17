@@ -25,6 +25,7 @@ class ViewerGL:
         self.window = glfw.create_window(1600, 1600, 'OpenGL', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
+        glfw.set_mouse_button_callback(self.window,self.Mouse_button_callback)
         # activation du context OpenGL pour la fenêtre
         glfw.make_context_current(self.window)
         glfw.swap_interval(1)
@@ -54,8 +55,6 @@ class ViewerGL:
                 if isinstance(obj, Object3D):
                     self.update_camera(obj.program)
                 obj.draw()
-
-
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
             # gestion des évènements
@@ -74,7 +73,12 @@ class ViewerGL:
         self.cam.transformation.rotation_euler[pyrr.euler.index().roll] += newY
         
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += newX
-
+        
+    def Mouse_button_callback(self,window, button, action,mods):
+        if button ==glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
+            print ("bouton click")
+            self.objs[-1].visible=False
+            self.objs[-2].visible=False
     def key_callback(self, win, key, scancode, action, mods):
         # sortie du programme si appui sur la touche 'échappement'
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
