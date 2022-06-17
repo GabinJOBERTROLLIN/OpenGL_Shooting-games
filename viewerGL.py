@@ -22,7 +22,7 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(800, 800, 'OpenGL', None, None)
+        self.window = glfw.create_window(1600, 1600, 'OpenGL', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
         # activation du context OpenGL pour la fenêtre
@@ -39,43 +39,21 @@ class ViewerGL:
 
     def run(self):
         # boucle d'affichage
-        coord=[0,0,0]
         while not glfw.window_should_close(self.window):
-            ok=True
-            print(self.cam.transformation.translation)
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
             coord=self.update_key()
 
             self.updateMouse(self.window)
+            self.cam.transformation.translation += \
+                pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
+            self.cam.transformation.translation[1]=1
+            self.cam.transformation.rotation_center = self.cam.transformation.translation
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
                 if isinstance(obj, Object3D):
                     self.update_camera(obj.program)
                 obj.draw()
-            for obj in self.objs:       
-                testx=coord[0]+self.cam.transformation.translation[0]
-                testz=coord[2]+self.cam.transformation.translation[2]
-                xmin=obj.transformation.translation.x-0.5
-                xmax=obj.transformation.translation.x+0.5
-                zmin=obj.transformation.translation.z-0.5
-                zmax=obj.transformation.translation.z+0.5
-                print(obj.transformation.translation)
-                print(testx)
-                print(testz)
-                if xmin<testx and testx<xmax:
-                    if zmin<testz and testz<zmax:
-                        ok=False
-                        break
-                    else:
-                        ok=True
-                print(coord)
-            if ok:
-                self.cam.transformation.translation += \
-                    pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
-                self.cam.transformation.translation[1]=1
-                self.cam.transformation.rotation_center = self.cam.transformation.translation
-
 
 
             # changement de buffer d'affichage pour éviter un effet de scintillement
@@ -87,8 +65,8 @@ class ViewerGL:
         global xCoord
         global yCoord
         x,y=glfw.get_cursor_pos(win)
-        newX=(x-xCoord)/100
-        newY=(y-yCoord)/100
+        newX=(x-xCoord)/300
+        newY=(y-yCoord)/300
 
         xCoord=x
         yCoord=y
