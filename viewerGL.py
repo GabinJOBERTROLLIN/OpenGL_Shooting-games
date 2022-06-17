@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import collections
 import OpenGL.GL as GL
 import glfw
 import pyrr
@@ -38,18 +39,42 @@ class ViewerGL:
         self.objs = []
         self.touch = {}
 
+    def collision(self,cam,objet):
+        x=cam[0]
+        z=cam[2]
+        xobj=objet[0]
+        zobj=objet[2]
+        yobj=objet[1]
+        xobjmin=xobj-1
+        xobjmax=xobj+1
+        zobjmin=zobj-1
+        zobjmax=zobj+1
+        if (xobjmin<=x and x<=xobjmax) and (zobjmin<=z and z<=zobjmax) and yobj>0:
+            return False
+        else:
+            return True
+
     def run(self):
         # boucle d'affichage
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
             coord=self.update_key()
-
             self.updateMouse(self.window)
-            self.cam.transformation.translation += \
-                pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
-            self.cam.transformation.translation[1]=1
-            self.cam.transformation.rotation_center = self.cam.transformation.translation
+            pose=self.cam.transformation.translation + pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
+
+            for obj in self.objs[:-2]:
+                ok=self.collision(pose,obj.transformation.translation)
+                if not ok:
+                    break
+
+            
+            if ok:
+                self.cam.transformation.translation += \
+                    pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
+                self.cam.transformation.translation[1]=1
+                self.cam.transformation.rotation_center = self.cam.transformation.translation
+
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
                 if isinstance(obj, Object3D):
@@ -59,6 +84,7 @@ class ViewerGL:
             glfw.swap_buffers(self.window)
             # gestion des évènements
             glfw.poll_events()
+
 
     def updateMouse(self,win):
         global xCoord
