@@ -69,7 +69,7 @@ class ViewerGL:
                 self.objs[-3].value=str(int(time.time()-self.timeStart))
             pose=self.cam.transformation.translation + pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
 
-            for obj in self.objs[:-3]:
+            for obj in self.objs[:-4]:
                 ok=self.collision(pose,obj.transformation.translation)
                 if not ok:
                     break
