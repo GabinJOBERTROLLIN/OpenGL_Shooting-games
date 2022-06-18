@@ -56,7 +56,7 @@ class ViewerGL:
                 obj.draw()
             for obj in self.objs[:len(self.objs)-2]:       
                 testx=coord[0]+self.cam.transformation.translation[0]
-                testz=coord[2]+self.cam.transformation.translation[2]
+                testz=coord[2]+self.cam.transformation.translation[2]   
                 xmin=obj.transformation.translation.x-0.5
                 xmax=obj.transformation.translation.x+0.5
                 zmin=obj.transformation.translation.z-0.5
