@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import collections
 import OpenGL.GL as GL
 import glfw
 import pyrr
@@ -22,7 +23,7 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(800, 800, 'Shooter basique', glfw.get_primary_monitor(), None)
+        self.window = glfw.create_window(1600, 1600, 'OpenGL', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
         glfw.set_mouse_button_callback(self.window,self.Mouse_button_callback)
@@ -38,58 +39,59 @@ class ViewerGL:
         self.objs = []
         self.touch = {}
 
+    def collision(self,cam,objet):
+        x=cam[0]
+        z=cam[2]
+        xobj=objet[0]
+        zobj=objet[2]
+        yobj=objet[1]
+        xobjmin=xobj-1
+        xobjmax=xobj+1
+        zobjmin=zobj-1
+        zobjmax=zobj+1
+        if (xobjmin<=x and x<=xobjmax) and (zobjmin<=z and z<=zobjmax) and yobj>0:
+            return False
+        else:
+            return True
+
     def run(self):
         # boucle d'affichage
-        coord=[0,0,0]
         while not glfw.window_should_close(self.window):
-            ok=True
-            #print(self.cam.transformation.translation)
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
             coord=self.update_key()
-
             self.updateMouse(self.window)
-            for obj in self.objs:
-                GL.glUseProgram(obj.program)
-                if isinstance(obj, Object3D):
-                    self.update_camera(obj.program)
-                obj.draw()
-            for obj in self.objs[:len(self.objs)-2]:       
-                testx=coord[0]+self.cam.transformation.translation[0]
-                testz=coord[2]+self.cam.transformation.translation[2]   
-                xmin=obj.transformation.translation.x-0.5
-                xmax=obj.transformation.translation.x+0.5
-                zmin=obj.transformation.translation.z-0.5
-                zmax=obj.transformation.translation.z+0.5
-                #print(obj.transformation.translation)
-                #print(testx)
-                #print(testz)
-                if xmin<testx and testx<xmax:
-                    if zmin<testz and testz<zmax:
-                        ok=False
-                        break
-                    else:
-                        ok=True
-                #print(coord)
+            pose=self.cam.transformation.translation + pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
+
+            for obj in self.objs[:-2]:
+                ok=self.collision(pose,obj.transformation.translation)
+                if not ok:
+                    break
+
+            
             if ok:
                 self.cam.transformation.translation += \
                     pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
                 self.cam.transformation.translation[1]=1
                 self.cam.transformation.rotation_center = self.cam.transformation.translation
 
-
-
+            for obj in self.objs:
+                GL.glUseProgram(obj.program)
+                if isinstance(obj, Object3D):
+                    self.update_camera(obj.program)
+                obj.draw()
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
             # gestion des évènements
             glfw.poll_events()
 
+
     def updateMouse(self,win):
         global xCoord
         global yCoord
         x,y=glfw.get_cursor_pos(win)
-        newX=(x-xCoord)/100
-        newY=(y-yCoord)/100
+        newX=(x-xCoord)/300
+        newY=(y-yCoord)/300
 
         xCoord=x
         yCoord=y
@@ -97,6 +99,7 @@ class ViewerGL:
         self.cam.transformation.rotation_euler[pyrr.euler.index().roll] += newY
         
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += newX
+        
     def Mouse_button_callback(self,window, button, action,mods):
         if button ==glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
             print ("bouton click")
@@ -147,17 +150,16 @@ class ViewerGL:
 
 
     def update_key(self):
+        coord=[0,0,0]
         if glfw.KEY_W in self.touch and self.touch[glfw.KEY_W] > 0:
-            return [0, 0, -0.2]
+            coord[2]+=-0.2
 
         if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
-            return [0, 0, 0.2]
+            coord[2]+=0.2
 
         if glfw.KEY_A in self.touch and self.touch[glfw.KEY_A] > 0:
-            return [-0.2, 0, 0]
+            coord[0]+=-0.2
 
         if glfw.KEY_D in self.touch and self.touch[glfw.KEY_D] > 0:
-            return [0.2, 0, 0],
-        else:
-            return [0,0,0]
-    
+            coord[0]+=0.2
+        return coord
