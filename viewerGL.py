@@ -6,6 +6,7 @@ import glfw
 import pyrr
 import numpy as np
 from cpe3d import Object3D
+import time
 
 
 global xCoord,yCoord
@@ -23,7 +24,7 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(1600, 1600, 'OpenGL', None, None)
+        self.window = glfw.create_window(1600, 1600, 'Shooter basique', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
         glfw.set_mouse_button_callback(self.window,self.Mouse_button_callback)
@@ -56,18 +57,23 @@ class ViewerGL:
 
     def run(self):
         # boucle d'affichage
+        self.timeStart=-1
+        coord=[0,0,0]
+        
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-            coord=self.update_key()
-            self.updateMouse(self.window)
+            if self.timeStart!=-1:
+                self.updateMouse(self.window)
+                coord=self.update_key()
+                self.objs[-3].value=str(int(time.time()-self.timeStart))
             pose=self.cam.transformation.translation + pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
 
-            for obj in self.objs[:-2]:
+            for obj in self.objs[:-3]:
                 ok=self.collision(pose,obj.transformation.translation)
                 if not ok:
                     break
-
+            
             
             if ok:
                 self.cam.transformation.translation += \
@@ -85,7 +91,7 @@ class ViewerGL:
             # gestion des évènements
             glfw.poll_events()
 
-
+    
     def updateMouse(self,win):
         global xCoord
         global yCoord
@@ -96,15 +102,30 @@ class ViewerGL:
         xCoord=x
         yCoord=y
         
+        
         self.cam.transformation.rotation_euler[pyrr.euler.index().roll] += newY
         
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += newX
+        if xCoord<=0:
+            glfw.set_cursor_pos(win,1600,yCoord)
+            xCoord=1600
+        if xCoord>1600:
+            glfw.set_cursor_pos(win,1,yCoord)
+            xCoord=1
+
+        
         
     def Mouse_button_callback(self,window, button, action,mods):
+        global xCoord,yCoord
         if button ==glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
             print ("bouton click")
             self.objs[-1].visible=False
             self.objs[-2].visible=False
+            self.timeStart=time.time()
+            glfw.set_cursor_pos(self.window,800,800)
+            xCoord=800
+            yCoord=800
+
     def key_callback(self, win, key, scancode, action, mods):
         # sortie du programme si appui sur la touche 'échappement'
         if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
