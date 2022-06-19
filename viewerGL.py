@@ -87,11 +87,12 @@ class ViewerGL:
     def run(self):
     # boucle d'affichage
         self.timeStart=-1
+        self.partiEnCours=False
         coord=[0,0,0]
         while not glfw.window_should_close(self.window):
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT) # nettoyage de la fenêtre : fond et profondeur
 
-            if self.timeStart!=-1:
+            if self.partiEnCours==True:
                 self.updateMouseCoord(self.window) # Rotate la caméra en fonction du déplacement de la sourie
                 coord=self.update_key() # Récupère le déplacmant que va faire le joueur en fonction des touches 
                 self.objs[-3].value=str(int(time.time()-self.timeStart))
@@ -136,15 +137,17 @@ class ViewerGL:
 
 #CALLBACKS KEY AND MOUSE  
     def Mouse_button_callback(self,window, button, action,mods):
+    # Mouse Callback
         global xCoord,yCoord
         R=0.6
-        
+        tousDetruit=True
         if button ==glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
-            if self.timeStart==-1:
+            if self.partiEnCours==False:
                 print ("bouton click")
                 self.objs[-1].visible=False
                 self.objs[-2].visible=False
                 self.timeStart=time.time()
+                self.partiEnCours=True
                 glfw.set_cursor_pos(self.window,800,800)
                 xCoord=800
                 yCoord=800
@@ -167,6 +170,12 @@ class ViewerGL:
                     if b*b-4*c>=-0.1:
                         print("touche")
                         obj.visible=False
+                    if obj.visible==True:
+                        tousDetruit=False
+                if tousDetruit==True:
+                    self.partiEnCours=False
+
+
                     
                 
 
