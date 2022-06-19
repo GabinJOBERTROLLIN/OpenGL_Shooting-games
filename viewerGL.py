@@ -37,12 +37,11 @@ class ViewerGL:
         # choix de la couleur de fond
         GL.glClearColor(0.5, 0.6, 0.9, 1.0)
         print(f"OpenGL: {GL.glGetString(GL.GL_VERSION).decode('ascii')}")
-
         self.objs = []
         self.cible=[]
         self.touch = {}
 
-    def collision(self,cam,objet):
+    def collision(self,cam,objet): # Fonction qui gerne la collision entre le joueur et les objets de l'enviornement; Entrées : les coordonnées de la caméra avec le prochain déplacment, les coordonnées d'un objet 
         x=cam[0]
         z=cam[2]
         xobj=objet[0]
@@ -52,7 +51,8 @@ class ViewerGL:
         xobjmax=xobj+1
         zobjmin=zobj-1
         zobjmax=zobj+1
-        if (xobjmin<=x and x<=xobjmax) and (zobjmin<=z and z<=zobjmax) and yobj>0:
+
+        if (xobjmin<=x and x<=xobjmax) and (zobjmin<=z and z<=zobjmax) and yobj>0: # Vérifie si le prochain déplacment ne met pas la camméra dans un objet et enlève l'objet sol et retourne si il n'y a pas collision (True) ou s'il y a collision (Fasle)
             return False
         else:
             return True
@@ -61,36 +61,38 @@ class ViewerGL:
         # boucle d'affichage
         self.timeStart=-1
         coord=[0,0,0]
-        
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-            if self.timeStart!=-1:
-                self.updateMouse(self.window)
-                coord=self.update_key()
-                self.objs[-3].value=str(int(time.time()-self.timeStart))
-            pose=self.cam.transformation.translation + pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
 
+            if self.timeStart!=-1:
+                self.updateMouse(self.window) # Rotate la caméra en fonction du déplacement de la sourie
+                coord=self.update_key() # Récupère le déplacmant que va faire le joueur en fonction des touches 
+                self.objs[-3].value=str(int(time.time()-self.timeStart))
+            pose=self.cam.transformation.translation + pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord)) # Calcule la futrue position du joueur qui sera utilisé dans le scolision
+            
+            # Rregarde s'il y a colision pour chauqe element du labyrinthe sort s'il y a colision avec un seul élément 
             for obj in self.objs[:-4]:
                 ok=self.collision(pose,obj.transformation.translation)
                 if not ok:
                     break
-            
-            #print("translation :",self.cam.transformation.translation)
-            #print("rotation :",self.cam.transformation.rotation_euler)
-            if ok:
+
+            if ok: # Déplace le joueur s'il n'y a pas collision
                 self.cam.transformation.translation += \
                     pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
                 self.cam.transformation.translation[1]=1
                 self.cam.transformation.rotation_center = self.cam.transformation.translation
 
+            # Affiche tout les éléments au joueurs
             for obj in self.objs:
                 GL.glUseProgram(obj.program)
                 if isinstance(obj, Object3D):
                     self.update_camera(obj.program)
                 obj.draw()
+
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
+
             # gestion des évènements
             glfw.poll_events()
 
@@ -107,7 +109,6 @@ class ViewerGL:
         
         
         self.cam.transformation.rotation_euler[pyrr.euler.index().roll] += newY
-        
         self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += newX
         if xCoord<=0:
             glfw.set_cursor_pos(win,1600,yCoord)
@@ -200,7 +201,7 @@ class ViewerGL:
         GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, self.cam.projection)
 
 
-    def update_key(self):
+    def update_key(self): # Récupère les information des touche permetant le délcement et retourne le déplacemant à faire
         coord=[0,0,0]
         if glfw.KEY_W in self.touch and self.touch[glfw.KEY_W] > 0:
             coord[2]+=-0.2
