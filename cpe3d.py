@@ -1,12 +1,19 @@
+# Bibliothèques générales
 import OpenGL.GL as GL
 import pyrr
 import numpy as np 
+
+
+
 
 class Transformation3D: 
     def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3()):
         self.rotation_euler = euler.copy()
         self.rotation_center = center.copy()
         self.translation = translation.copy()
+
+
+
 
 class Object:
     def __init__(self, vao, nb_triangle, program, texture):
@@ -22,6 +29,10 @@ class Object:
             GL.glBindVertexArray(self.vao)
             GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
             GL.glDrawElements(GL.GL_TRIANGLES, 3*self.nb_triangle, GL.GL_UNSIGNED_INT, None)
+
+
+
+
 
 class Object3D(Object):
     def __init__(self, vao, nb_triangle, program, texture, transformation):
@@ -58,10 +69,16 @@ class Object3D(Object):
             super().draw()
         
 
+
+
 class Camera:
     def __init__(self, transformation = Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')), projection = pyrr.matrix44.create_perspective_projection(60, 1, 0.01, 100)):
         self.transformation = transformation
         self.projection = projection
+
+
+
+
 
 class Text(Object):
     def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, program, texture):
