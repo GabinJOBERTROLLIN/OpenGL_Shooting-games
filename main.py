@@ -1,13 +1,27 @@
+#---------------------------------------------------------
+# Créateur : CHRONOWSKI Amaury / JOBERT--ROLLIN Gabin 
+# Sur la base d'un programme créé par DUPONT Thibault
+# Crée le : 10/06/2022
+# Programme : Permet de lancer un jeu de Shooter classique
+#---------------------------------------------------------
+
+# Bibliothèques générales
 from zlib import Z_NO_COMPRESSION
-from viewerGL import ViewerGL
 import glutils
-from mesh import Mesh
-from cpe3d import Object3D, Camera, Transformation3D, Text
 import numpy as np
 import OpenGL.GL as GL
 import pyrr
 
-def main(): # Fonction qui lance le programme
+# bibliothèques interne projet
+from mesh import Mesh
+from cpe3d import Object3D, Camera, Transformation3D, Text
+from viewerGL import ViewerGL
+
+
+
+
+def main():
+# Fonction qui lance le programme
     
     # Ouverture du fichier où la disposition de l'espace de jeu est stocké (enseble de 16 lignes de 16 valeurs pour faire un carrée, qui a la valeur 0, le vide, 1, un mur, 2, une cible)
     Stage=open('stage.txt','r')
