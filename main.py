@@ -43,19 +43,20 @@ def main():
     n.normalize()
     vaoN=n.load_to_gpu()
     n.apply_matrix(pyrr.matrix44.create_from_scale([1, 1, 1, 1]))
-    texturew = glutils.load_texture('Wall.jpg')
-    textures = glutils.load_texture('stegosaurus.jpg')
+    textureW = glutils.load_texture('Wall.jpg')
+    textureS = glutils.load_texture('stegosaurus.jpg')
     i = 0
     for ligne in map:
         for bloc in ligne:
             if bloc==1:
                 tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,1,zcord]))
-                o = Object3D(vaoM, m.get_nb_triangles(), program3d_id, texturew, tr)
+                o = Object3D(vaoM, m.get_nb_triangles(), program3d_id, textureW, tr)
                 viewer.add_object(o)
             if bloc==2:
                 tr = Transformation3D(euler=pyrr.euler.create(), center=pyrr.Vector3(), translation=pyrr.Vector3([xcord,0.5,zcord]))
-                o = Object3D(vaoN, n.get_nb_triangles(), program3d_id, textures, tr)
+                o = Object3D(vaoN, n.get_nb_triangles(), program3d_id, textureS, tr)
                 viewer.add_object(o)
+                viewer.add_cible(o)
             if bloc==0 and ( xcord==-15 or xcord==15 or zcord==-15 or zcord==15):
                 viewer.cam.transformation.translation.x = xcord
                 viewer.cam.transformation.translation.y = 1

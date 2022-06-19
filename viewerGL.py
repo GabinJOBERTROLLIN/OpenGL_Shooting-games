@@ -5,6 +5,7 @@ import OpenGL.GL as GL
 import glfw
 import pyrr
 import numpy as np
+from sympy import euler
 from cpe3d import Object3D
 import time
 
@@ -38,6 +39,7 @@ class ViewerGL:
         print(f"OpenGL: {GL.glGetString(GL.GL_VERSION).decode('ascii')}")
 
         self.objs = []
+        self.cible=[]
         self.touch = {}
 
     def collision(self,cam,objet):
@@ -74,7 +76,8 @@ class ViewerGL:
                 if not ok:
                     break
             
-            
+            #print("translation :",self.cam.transformation.translation)
+            #print("rotation :",self.cam.transformation.rotation_euler)
             if ok:
                 self.cam.transformation.translation += \
                     pyrr.matrix33.apply_to_vector(pyrr.matrix33.create_from_eulers(self.cam.transformation.rotation_euler), pyrr.Vector3(coord))
@@ -113,18 +116,42 @@ class ViewerGL:
             glfw.set_cursor_pos(win,1,yCoord)
             xCoord=1
 
-        
+
         
     def Mouse_button_callback(self,window, button, action,mods):
         global xCoord,yCoord
+        R=0.5
+        
         if button ==glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
-            print ("bouton click")
-            self.objs[-1].visible=False
-            self.objs[-2].visible=False
-            self.timeStart=time.time()
-            glfw.set_cursor_pos(self.window,800,800)
-            xCoord=800
-            yCoord=800
+            if self.timeStart==-1:
+                print ("bouton click")
+                self.objs[-1].visible=False
+                self.objs[-2].visible=False
+                self.timeStart=time.time()
+                glfw.set_cursor_pos(self.window,800,800)
+                xCoord=800
+                yCoord=800
+            else:
+                for obj in self.cible:
+                    trObj=np.array(obj.transformation.translation).copy()
+                   
+                    AC=np.array(trObj)-np.array(self.cam.transformation.translation)
+                    rot=np.array(self.cam.transformation.rotation_euler)
+
+                    rot=[]
+                    yaw=self.cam.transformation.rotation_euler[pyrr.euler.index().yaw]
+                    pitch=self.cam.transformation.rotation_euler[pyrr.euler.index().pitch]
+                    rot.append(np.sin(yaw))
+                    rot.append(-np.sin(pitch)*np.cos(yaw))
+                    rot.append(-np.cos(pitch)*np.cos(yaw))
+                    b=2*np.dot(AC,rot)/(np.dot(rot,rot))
+                    c=(np.dot(AC,AC)-R*R)/(np.dot(rot,rot))
+                    
+                    if b*b-4*c>=-0.1:
+                        print("touche")
+                        obj.visible=False
+                    
+                
 
     def key_callback(self, win, key, scancode, action, mods):
         # sortie du programme si appui sur la touche 'échappement'
@@ -134,6 +161,9 @@ class ViewerGL:
     
     def add_object(self, obj):
         self.objs.append(obj)
+
+    def add_cible(self,obj):
+        self.cible.append(obj)
 
     def set_camera(self, cam):
         self.cam = cam
