@@ -57,7 +57,8 @@ class ViewerGL:
 
     def run(self):
         # boucle d'affichage
-        self.timeStart=-1 
+        self.timeStart=-1
+        coord=[0,0,0]
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
