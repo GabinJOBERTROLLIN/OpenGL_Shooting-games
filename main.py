@@ -117,4 +117,6 @@ def main():
 
 
 if __name__ == '__main__':
+    import viewerGL
+    #suite des imports et du programme
     main()

@@ -13,7 +13,7 @@ import OpenGL.GL as GL
 import glfw
 import pyrr
 import numpy as np
-from sympy import euler
+#from sympy import euler
 import time
 
 # bibliothèques interne projet
@@ -174,6 +174,7 @@ class ViewerGL:
                         tousDetruit=False
                 if tousDetruit==True:
                     self.partiEnCours=False
+                    #INSERER ICI CODE ECRAN TITRE ET RECOMMENCER
 
 
                     
